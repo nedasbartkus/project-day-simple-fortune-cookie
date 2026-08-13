@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cookie-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cookie-frontend
+  template:
+    metadata:
+      labels:
+        app: cookie-frontend
+    spec:
+      containers:
+        - name: frontend
+          image: nb05/cookie-frontend:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: BACKEND_DNS                                                                                                      
+              value: cookie-backend                                                                                                  
+            - name: BACKEND_PORT
+              value: "9000"  
