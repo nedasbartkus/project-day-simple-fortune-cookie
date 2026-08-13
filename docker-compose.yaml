@@ -18,3 +18,8 @@ services:
 
   redis:
     image: redis:7.4.6
+    healthcheck:
+      test: ["CMD", "redis_cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
