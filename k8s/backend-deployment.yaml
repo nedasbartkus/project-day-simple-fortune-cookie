@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cookie-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cookie-backend
+  template:
+    metadata:
+      labels:
+        app: cookie-backend
+    spec:
+      containers:
+        - name: backend
+          image: cookie-backend
+          ports:
+            - containerPort: 9000
+          env:
+            - name: REDIS_DNS
+              value: redis
