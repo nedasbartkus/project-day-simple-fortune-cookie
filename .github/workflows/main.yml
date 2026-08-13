@@ -9,20 +9,16 @@ env:
   github_password: ${{ secrets.GITHUB_TOKEN }}
   GIT_COMMIT: ${{ github.sha }}
 jobs:
-  Build:
+  Pull:
     runs-on: ubuntu-22.04
     steps:
-      - name: Clone repository
-        uses: actions/checkout@v4
-      - name: Set up Go
-        uses: actions/setup-go@v5
-      - name: Build backend
-        run: cd backend && go build
-      - name: Build frontend
-        run: cd frontend && go build
+      - name: Pull backend
+        run: docker pull nb05/cookie-backend:latest
+      - name: Pull frontend
+        run: docker pull nb05/cookie-frontend:latest
   Test:
     runs-on: ubuntu-22.04
-    needs: [Build]
+    needs: [Pull]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
