@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: backend
-          image: cookie-backend
+          image: nb05/cookie-backend:latest
           ports:
             - containerPort: 9000
           env:
