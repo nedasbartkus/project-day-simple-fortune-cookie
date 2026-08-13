@@ -9,17 +9,13 @@ env:
   github_password: ${{ secrets.GITHUB_TOKEN }}
   GIT_COMMIT: ${{ github.sha }}
 jobs:
-  Setup:
+  Build:
     runs-on: ubuntu-22.04
     steps:
       - name: Clone repository
         uses: actions/checkout@v4
       - name: Set up Go
         uses: actions/setup-go@v5
-  Build:
-    runs-on: ubuntu-22.04
-    needs: [Setup]
-    steps:
       - name: Build backend
         run: cd backend && go build
       - name: Build frontend
