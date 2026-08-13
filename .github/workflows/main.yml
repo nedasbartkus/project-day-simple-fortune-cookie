@@ -24,5 +24,7 @@ jobs:
     runs-on: ubuntu-22.04
     needs: [Build]
     steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
       - name: Run tests
         run: cd frontend && go test
