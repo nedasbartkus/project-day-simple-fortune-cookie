@@ -14,7 +14,7 @@ To run the backend container:
 docker run -p 9000:9000 cookie-backend
 ```
 
-To stop the container:~
+To stop the container:
 
 ```powershell
 docker ps
