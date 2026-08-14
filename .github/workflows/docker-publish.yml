@@ -57,14 +57,11 @@ jobs:
 
       - name: Start stack
         run: docker compose up -d
-        env:
-          BACKEND_TAG: ${{ github.sha }}
-          FRONTEND_TAG: ${{ github.sha }}
 
       - name: Wait for backend
         run: |
           for i in {1..15}; do
-            curl --fail http://localhost:9000/health && exit 0
+            curl --fail http://localhost:9000/ && exit 0
             sleep 2
           done
           echo "Backend did not become healthy in time" >&2
