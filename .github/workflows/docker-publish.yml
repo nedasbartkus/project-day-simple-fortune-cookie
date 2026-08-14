@@ -1,78 +1,88 @@
 name: build, publish, test Docker images
-
 on:
   push:
     branches:
       - main
-
+      - nedas-deployment-test
 env:
   FRONTEND_IMAGE: nb05/cookie-frontend
   BACKEND_IMAGE: nb05/cookie-backend
-
 jobs:
   build-and-push:
     runs-on: ubuntu-22.04
-
     permissions:
       contents: read
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-
       - name: Build and push frontend
         uses: docker/build-push-action@v6
         with:
           context: ./frontend
           file: ./frontend/Dockerfile
           push: true
-          platforms: linux/amd64,linux/arm64 
+          platforms: linux/amd64,linux/arm64
           tags: |
             ${{ env.FRONTEND_IMAGE }}:latest
             ${{ env.FRONTEND_IMAGE }}:${{ github.sha }}
-
       - name: Build and push backend
         uses: docker/build-push-action@v6
         with:
           context: ./backend
           file: ./backend/Dockerfile
           push: true
-          platforms: linux/amd64,linux/arm64 
+          platforms: linux/amd64,linux/arm64
           tags: |
             ${{ env.BACKEND_IMAGE }}:latest
             ${{ env.BACKEND_IMAGE }}:${{ github.sha }}
-            
+
   pull-and-test:
+    needs: build-and-push
     runs-on: ubuntu-22.04
-    needs: [build-and-push]
-
     steps:
-      - name: Pull backend
-        run: docker pull nb05/cookie-backend:latest
-        
-      - name: Pull frontend
-        run: docker pull nb05/cookie-frontend:latest
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Run backend
-        run: docker run -p 9000:9000 cookie-backend
+      - name: Pull images
+        run: |
+          docker pull ${{ env.BACKEND_IMAGE }}:${{ github.sha }}
+          docker pull ${{ env.FRONTEND_IMAGE }}:${{ github.sha }}
 
-      - name: Run frontend
-        run: docker run -p 8080:8080 cookie-frontend
+      - name: Start stack
+        run: docker compose up -d
+        env:
+          BACKEND_TAG: ${{ github.sha }}
+          FRONTEND_TAG: ${{ github.sha }}
 
-      - name: Docker compose
-        run: docker compose up --build
+      - name: Wait for backend
+        run: |
+          for i in {1..15}; do
+            curl --fail http://localhost:9000/health && exit 0
+            sleep 2
+          done
+          echo "Backend did not become healthy in time" >&2
+          exit 1
 
-      - name: Smoke test
-        run: curl --fail http://localhost:8080
+      - name: Wait for frontend
+        run: |
+          for i in {1..15}; do
+            curl --fail http://localhost:8080 && exit 0
+            sleep 2
+          done
+          echo "Frontend did not become healthy in time" >&2
+          exit 1
+
+      - name: Show logs on failure
+        if: failure()
+        run: docker compose logs
 
       - name: Cleanup
+        if: always()
         run: docker compose down
