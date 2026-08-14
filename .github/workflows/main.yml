@@ -24,3 +24,13 @@ jobs:
       - uses: actions/setup-go@v5
       - name: Run tests
         run: cd frontend && go test
+  Deploy:
+    runs-on: ubuntu-22.04                                                                                                  
+    needs: [Test]              
+    steps:                                                                                                                 
+      - uses: actions/checkout@v4                                                                                        
+      - name: Continuous Deploy                                                                                            
+        run: bash deploy.sh                                        
+        env:
+          KUBECONFIG: ${{ secrets.KUBECONFIG }}
+  
