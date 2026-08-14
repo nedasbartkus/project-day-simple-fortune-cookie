@@ -171,6 +171,14 @@ func notFound(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	mux := http.NewServeMux()
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/" {
+			notFound(w, r)
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("ok"))
+	})
 	fortuneH := &fortuneHandler{
 		store: &datastoreDefault,
 	}
@@ -178,5 +186,5 @@ func main() {
 	mux.Handle("/fortunes/", fortuneH)
 
 	err := http.ListenAndServe(":9000", mux)
-    fmt.Println("%v", err)
+	fmt.Printf("%v\n", err)
 }
