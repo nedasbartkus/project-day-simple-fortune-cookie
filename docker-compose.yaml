@@ -1,13 +1,13 @@
 services:
   backend: 
-    image: cookie-backend
+    image: nb05/cookie-backend:latest
     environment:
       REDIS_DNS: redis
     ports:
       - "9000:9000"
 
   frontend:
-    image: cookie-frontend
+    image: nb05/cookie-frontend:latest
     environment:
       BACKEND_DNS: backend
       BACKEND_PORT: "9000"
