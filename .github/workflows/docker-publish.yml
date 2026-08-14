@@ -1,4 +1,4 @@
-name: Build and Publish Docker Images
+name: build, publish, test Docker images
 
 on:
   push:
@@ -10,7 +10,7 @@ env:
   BACKEND_IMAGE: nb05/cookie-backend
 
 jobs:
-  docker:
+  build-and-push:
     runs-on: ubuntu-22.04
 
     permissions:
@@ -50,3 +50,28 @@ jobs:
           tags: |
             ${{ env.BACKEND_IMAGE }}:latest
             ${{ env.BACKEND_IMAGE }}:${{ github.sha }}
+            
+  pull-and-test:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Pull backend
+        run: docker pull nb05/cookie-backend:latest
+        
+      - name: Pull frontend
+        run: docker pull nb05/cookie-frontend:latest
+
+      - name: Run backend
+        run: docker run -p 9000:9000 cookie-backend
+
+      - name: Run frontend
+        run: docker run -p 8080:8080 cookie-frontend
+
+      - name: Docker compose
+        run: docker compose up --build
+
+      - name: Smoke test
+        run: curl --fail http://localhost:8080
+
+      - name: Cleanup
+        run: docker compose down
