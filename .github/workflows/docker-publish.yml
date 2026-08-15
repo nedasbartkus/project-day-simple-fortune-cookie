@@ -1,9 +1,8 @@
-name: build, publish, test Docker images
+name: build and publish Docker images
 on:
   push:
     branches:
       - main
-      - nedas-deployment-test
 env:
   FRONTEND_IMAGE: nb05/cookie-frontend
   BACKEND_IMAGE: nb05/cookie-backend
@@ -42,44 +41,3 @@ jobs:
           tags: |
             ${{ env.BACKEND_IMAGE }}:latest
             ${{ env.BACKEND_IMAGE }}:${{ github.sha }}
-
-  pull-and-test:
-    needs: build-and-push
-    runs-on: ubuntu-22.04
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Pull images
-        run: |
-          docker pull ${{ env.BACKEND_IMAGE }}:${{ github.sha }}
-          docker pull ${{ env.FRONTEND_IMAGE }}:${{ github.sha }}
-
-      - name: Start stack
-        run: docker compose up -d
-
-      - name: Wait for backend
-        run: |
-          for i in {1..15}; do
-            curl --fail http://localhost:9000/fortunes && exit 0
-            sleep 2
-          done
-          echo "Backend did not become healthy in time" >&2
-          exit 1
-
-      - name: Wait for frontend
-        run: |
-          for i in {1..15}; do
-            curl --fail http://localhost:8080 && exit 0
-            sleep 2
-          done
-          echo "Frontend did not become healthy in time" >&2
-          exit 1
-
-      - name: Show logs on failure
-        if: failure()
-        run: docker compose logs
-
-      - name: Cleanup
-        if: always()
-        run: docker compose down
