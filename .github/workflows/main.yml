@@ -3,12 +3,8 @@ name: Main workflow
 on:
   push:
     branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
     
 env:
-  github_username: ${{ github.actor }}
-  github_password: ${{ secrets.GITHUB_TOKEN }}
   GIT_COMMIT: ${{ github.sha }}
   FRONTEND_IMAGE: nb05/cookie-frontend
   BACKEND_IMAGE: nb05/cookie-backend
